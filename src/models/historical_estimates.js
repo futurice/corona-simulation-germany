@@ -18,7 +18,7 @@ export function createHistoricalEstimates(hs_parsed, N, D_incbation, D_infectiou
         g[day]['recovered_mild'] = 0
         g[day]['recovered_hospital'] = 0
         g[day]['fatalities'] = 0
-        g[day]['not_used_hospitalization_estimate'] = 0
+        g[day]['hospitalization_estimate'] = 0
         g[day]['activate_hospitalizations'] = 0
         g[day]['icu'] = 0
     }
@@ -90,7 +90,7 @@ export function createHistoricalEstimates(hs_parsed, N, D_incbation, D_infectiou
         // values are correct).
         const hospCount = Math.round((P_SEVERE + CFR) * adjustedCount)
         for (var hospDay=hospStartDay; hospDay<=hospEndDay && hospDay<days; hospDay++) {
-            g[hospDay]['not_used_hospitalization_estimate'] += hospCount
+            g[hospDay]['hospitalization_estimate'] += hospCount
         }
     }
 
@@ -100,23 +100,15 @@ export function createHistoricalEstimates(hs_parsed, N, D_incbation, D_infectiou
         // const countIcu = hs_parsed['activeICU'][day]
         // const countBoth = countWard + countIcu
         const proportionOfHospitaliedWhoWillDie = CFR / (CFR + P_SEVERE)
-        g[day]['hospital_will_die'] = Math.round(proportionOfHospitaliedWhoWillDie * g[day]['not_used_hospitalization_estimate'])
-        g[day]['hospital_will_survive'] = g[day]['not_used_hospitalization_estimate'] - g[day]['hospital_will_die']
+        g[day]['hospital_will_die'] = Math.round(proportionOfHospitaliedWhoWillDie * g[day]['hospitalization_estimate'])
+        g[day]['hospital_will_survive'] = g[day]['hospitalization_estimate'] - g[day]['hospital_will_die']
     }
 
     // Estimate values for goh states active_hospitalizations and active_ICU (Germany doesn't have this data in the API)
     for (var day=0; day<days; day++) {
-        g[day]['icu'] = Math.round(P_ICU * g[day]['not_used_hospitalization_estimate'])
-        g[day]['activate_hospitalizations'] = g[day]['not_used_hospitalization_estimate'] - g[day]['icu']
+        g[day]['icu'] = Math.round(P_ICU * g[day]['hospitalization_estimate'])
+        g[day]['activate_hospitalizations'] = g[day]['hospitalization_estimate'] - g[day]['icu']
     }
-
-    // // Console log expected hospitalizations vs actual hospitalizations 
-    // for (var day=0; day<days; day++) {
-    //     const eh = g[day]['not_used_hospitalization_estimate']
-    //     const ah = g[day]['hospital_will_die'] + g[day]['hospital_will_survive']
-    //     // Uncomment the following line when needed:
-    //     //console.log('Day', day, 'expected hospitalizations', eh, 'versus actual', ah)
-    // }
 
     // Cutoff days before day 0 (because we want to lock the first day to 25.3. instead of allowing it to move when the user tunes incubation parameter etc.)
     // Also cutoff days after lastDay-shiftDays (because we can't infer incubations until later, when confirmed cases come in.)

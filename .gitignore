@@ -1,0 +1,6 @@
+node_modules/
+*.scratch
+.idea/
+public/bundle.*
+**/.DS_Store
+

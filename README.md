@@ -63,18 +63,18 @@ Here are roughly the things you need to change to customize this for your countr
     - OPTIONAL: new hospitalizations (as opposed to active)
     - OPTIONAL: recoveries by day
 - Write parsing for the data
-    - take inspiration from [update-data-de.js](update-data.js)
+    - take inspiration from [update-data-de.js](https://github.com/futurice/corona-simulation-germany/blob/master/update-data-de.js)
 - Deal with any country-specific peculiarities related to data collection / reporting
-    - some of these peculiarities are dealt with when parsing data, in [update-data-de.js](update-data-de.js)
-    - and some are dealt with when creating historical estimates, in [src/models/historical_estimates.js](src/models/historical_estimates.js)
+    - some of these peculiarities are dealt with when parsing data, in [update-data-de.js](https://github.com/futurice/corona-simulation-germany/blob/master/update-data-de.js)
+    - and some are dealt with when creating historical estimates, in [src/models/historical_estimates.js](https://github.com/futurice/corona-simulation-germany/blob/master/src/models/historical_estimates.js)
     - 
 - Go through parameters and change default values for any country-specific parameters
-    - most parameters are in [src/paramConfig.json](src/paramConfig.json)
+    - most parameters are in [src/paramConfig.json](https://github.com/futurice/corona-simulation-germany/blob/master/src/paramConfig.json)
     - R0 is a special case, because it is estimated from data, rather than fixed default value
 - Change population count N
-    - you'll find that in [src/App.svelte](src/App.svelte)
+    - you'll find that in [src/App.svelte](https://github.com/futurice/corona-simulation-germany/blob/master/src/App.svelte)
 - Change the flag and texts.
-    - also in [src/App.svelte](src/App.svelte)
+    - also in [src/App.svelte](https://github.com/futurice/corona-simulation-germany/blob/master/src/App.svelte)
 - Set up hosting
     - I recommend Netlify.
 - Set up a process to rebuild and deploy every x hours (for data updates)

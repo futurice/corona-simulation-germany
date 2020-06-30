@@ -19,7 +19,7 @@ export function createHistoricalEstimates(hs_parsed, N, D_incbation, D_infectiou
         g[day]['recovered_hospital'] = 0
         g[day]['fatalities'] = 0
         g[day]['hospitalization_estimate'] = 0
-        g[day]['activate_hospitalizations'] = 0
+        g[day]['active_hospitalizations'] = 0
         g[day]['icu'] = 0
     }
 
@@ -107,7 +107,7 @@ export function createHistoricalEstimates(hs_parsed, N, D_incbation, D_infectiou
     // Estimate values for goh states active_hospitalizations and active_ICU (Germany doesn't have this data in the API)
     for (var day=0; day<days; day++) {
         g[day]['icu'] = Math.round(P_ICU * g[day]['hospitalization_estimate'])
-        g[day]['activate_hospitalizations'] = g[day]['hospitalization_estimate'] - g[day]['icu']
+        g[day]['active_hospitalizations'] = g[day]['hospitalization_estimate'] - g[day]['icu']
     }
 
     // Cutoff days before day 0 (because we want to lock the first day to 25.3. instead of allowing it to move when the user tunes incubation parameter etc.)
@@ -138,7 +138,7 @@ export function createHistoricalEstimates(hs_parsed, N, D_incbation, D_infectiou
     var uf_states = map_goh_states_into_UFStates(goh_states, N, 0)
     for (var day=0; day<days-shiftDays; day++) {
         // Because goh states do not have ICU as a state, we'll put real ward and ICU values in there at this point.
-        uf_states[day]['hospitalized'] = g[day]['activate_hospitalizations']
+        uf_states[day]['hospitalized'] = g[day]['active_hospitalizations']
         uf_states[day]['icu']          = g[day]['icu']
     }
     

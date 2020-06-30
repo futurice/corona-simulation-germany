@@ -1,4 +1,4 @@
-Project based on [Corosim for Finalnd])https://github.com/futurice/corona-simulations)
+Project based on [Corosim for Finalnd](https://github.com/futurice/corona-simulations)
 
 # Corosim
 

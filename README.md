@@ -91,6 +91,8 @@ date,id,infections,deaths,newinfections,newdeaths
 2020-03-01,648,127,0,63,0
 2020-03-02,904,155,0,28,0
 ```
-For the Germany simulations, `we used # cumulative infections, # new infections, # cumulative deaths, # new deaths per day`. The number of hospitalizations (both regular ward and ICU) and recoveries (together with other parameters), are computed in `historical_estimate.js` taking into account some assumptions and parameters which are present in `paramConfig.js`.
+For the Germany simulations, we used `# cumulative infections, # new infections, # cumulative deaths, # new deaths per day`. The number of hospitalizations (both regular ward and ICU) and recoveries (together with other parameters), are computed in `historical_estimate.js` taking into account some assumptions and parameters which are present in `paramConfig.js`.
+
+In case hospitalization data is available, this can be used to compute `hospital_will_die`, `hospital_will_survive`, `icu` and `active_hospitalizations`, instead of the  `hospitalization_estimate` parameter. 
 
 

@@ -1,8 +1,10 @@
+Project based on [Corosim for Finalnd])https://github.com/futurice/corona-simulations)
+
 # Corosim
 
 Deployed & explained here:
 
-https://corosim.fi/
+TODO
 
 ## Initial setup
 
@@ -63,8 +65,9 @@ Here are roughly the things you need to change to customize this for your countr
 - Write parsing for the data
     - take inspiration from [update-data.js](update-data.js)
 - Deal with any country-specific peculiarities related to data collection / reporting
-    - some of these peculiarities are dealt with when parsing data, in [update-data.js](update-data.js)
+    - some of these peculiarities are dealt with when parsing data, in [update-data-de.js](update-data-de.js)
     - and some are dealt with when creating historical estimates, in [src/models/historical_estimates.js](src/models/historical_estimates.js)
+    - 
 - Go through parameters and change default values for any country-specific parameters
     - most parameters are in [src/paramConfig.json](src/paramConfig.json)
     - R0 is a special case, because it is estimated from data, rather than fixed default value
@@ -76,3 +79,18 @@ Here are roughly the things you need to change to customize this for your countr
     - I recommend Netlify.
 - Set up a process to rebuild and deploy every x hours (for data updates)
     - I recommend [GitHub workflows and Netlify build hooks](https://ericjinks.com/blog/2019/netlify-scheduled-build/).
+
+## Peculiarities of German Data 
+
+The data used in this simulation is provided by the Robert Koch Institute (RKI) and fetched automatically from this [repository](https://github.com/swildermann/COVID-19). We further preprocess the data [here](https://github.com/futurice/corona-simulation-germany) to bring it to format that is easier to work with (and store it on AWS S3 using AWS Lambda functions): 
+
+```
+date,id,infections,deaths,newinfections,newdeaths
+2020-02-28,136,53,0,53,0
+2020-02-29,392,64,0,11,0
+2020-03-01,648,127,0,63,0
+2020-03-02,904,155,0,28,0
+```
+For the Germany simulations, `we used # cumulative infections, # new infections, # cumulative deaths, # new deaths per day`. The number of hospitalizations (both regular ward and ICU) and recoveries (together with other parameters), are computed in `historical_estimate.js` taking into account some assumptions and parameters which are present in `paramConfig.js`.
+
+

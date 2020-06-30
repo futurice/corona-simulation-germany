@@ -63,7 +63,7 @@ Here are roughly the things you need to change to customize this for your countr
     - OPTIONAL: new hospitalizations (as opposed to active)
     - OPTIONAL: recoveries by day
 - Write parsing for the data
-    - take inspiration from [update-data.js](update-data.js)
+    - take inspiration from [update-data-de.js](update-data.js)
 - Deal with any country-specific peculiarities related to data collection / reporting
     - some of these peculiarities are dealt with when parsing data, in [update-data-de.js](update-data-de.js)
     - and some are dealt with when creating historical estimates, in [src/models/historical_estimates.js](src/models/historical_estimates.js)

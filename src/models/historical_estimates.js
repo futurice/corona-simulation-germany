@@ -1,6 +1,64 @@
 import { isValidDate } from '../utils.js';
 import { map_goh_states_into_UFStates } from './gohs_seir_ode.js';
 
+export function createHistoricalEstimates(rki_parsed, N, D_incubation, D_infectious, D_recovery_mild, D_hospital, P_SEVERE, P_ICU, CFR, undetected_infections, unrecorded_deaths) {
+    const days = rki_parsed['days']
+    const first_date = new Date(rki_parsed['epidemyStartDate'])
+    const shiftDays = Math.round(D_incubation + D_infectious)
+    const estimates = initEstimates(days, shiftDays)
+
+    estimateFatalities(estimates, rki_parsed, days, unrecorded_deaths)
+
+    // Estimate values for other states.
+    for (var confirmedCaseDay=0; confirmedCaseDay<days; confirmedCaseDay++) {
+
+        // Assume undetected_infections
+        const count = rki_parsed['newConfirmedCases'][confirmedCaseDay]
+        const adjustedCount = Math.round(count / (1 - undetected_infections))
+
+        const infectiousEndDay = confirmedCaseDay
+        const infectiousStartDay = confirmedCaseDay - Math.round(D_infectious) + 1
+        estimateInfectious(estimates, adjustedCount, infectiousEndDay, infectiousStartDay,)
+
+        const incubationEndDay = infectiousStartDay - 1
+        const incubationStartDay = incubationEndDay - Math.round(D_incubation) + 1
+        estimateExposed(estimates, adjustedCount, incubationEndDay, incubationStartDay)
+
+        const mildCount = Math.round((1 - P_SEVERE - CFR) * adjustedCount)
+        const mildStartDay = infectiousEndDay+1
+        const mildEndDay = mildStartDay + Math.round(D_recovery_mild) - 1
+        estimateMild(estimates, days, mildStartDay, mildEndDay, mildCount)
+
+        const mildRecoveredStartDay = mildEndDay+1
+        estimateMildRecovery(estimates, mildRecoveredStartDay, mildCount, days)
+
+        const hospSurvivorCount = Math.round(P_SEVERE * adjustedCount)
+        const hospStartDay = infectiousEndDay + 1
+        const hospEndDay = hospStartDay + Math.round(D_hospital) - 1
+        const recHospStartDay = hospEndDay + 1
+        estimateRecoveredHospital(estimates, recHospStartDay, days, hospSurvivorCount)
+
+        const hospCount = Math.round((P_SEVERE + CFR) * adjustedCount)
+        estimateHospitalization(estimates, hospStartDay, hospEndDay, days, hospCount)
+        
+    }
+
+    const proportionOfHospitaliedWhoWillDie = CFR / (CFR + P_SEVERE)
+    estimateHospitalOutcome(estimates, days, proportionOfHospitaliedWhoWillDie)
+
+    estimateRegularAndICU(estimates, days, P_ICU)
+
+    var shiftedStates = shiftEstimates(estimates, days, shiftDays)
+
+    var goh_states = createGohStates(shiftedStates, N)
+
+    var uf_states = map_goh_states_into_UFStates(goh_states, N, 0)
+    createUserFacingStates(uf_states, estimates, days, shiftDays)
+    
+    
+    return [first_date, goh_states, uf_states]
+}
+
 function initEstimates(days, shiftDays){
     const g = []
     for (var day=0-shiftDays; day<days; day++) {
@@ -128,62 +186,4 @@ function createUserFacingStates(uf_states, estimates, days, shiftDays){
         uf_states[day]['hospitalized'] = estimates[day]['active_hospitalizations']
         uf_states[day]['icu']          = estimates[day]['icu']
     }
-}
-
-export function createHistoricalEstimates(rki_parsed, N, D_incubation, D_infectious, D_recovery_mild, D_hospital, P_SEVERE, P_ICU, CFR, undetected_infections, unrecorded_deaths) {
-    const days = rki_parsed['days']
-    const first_date = new Date(rki_parsed['epidemyStartDate'])
-    const shiftDays = Math.round(D_incubation + D_infectious)
-    const estimates = initEstimates(days, shiftDays)
-
-    estimateFatalities(estimates, rki_parsed, days, unrecorded_deaths)
-
-    // Estimate values for other states.
-    for (var confirmedCaseDay=0; confirmedCaseDay<days; confirmedCaseDay++) {
-
-        // Assume undetected_infections
-        const count = rki_parsed['newConfirmedCases'][confirmedCaseDay]
-        const adjustedCount = Math.round(count / (1 - undetected_infections))
-
-        const infectiousEndDay = confirmedCaseDay
-        const infectiousStartDay = confirmedCaseDay - Math.round(D_infectious) + 1
-        estimateInfectious(estimates, adjustedCount, infectiousEndDay, infectiousStartDay,)
-
-        const incubationEndDay = infectiousStartDay - 1
-        const incubationStartDay = incubationEndDay - Math.round(D_incubation) + 1
-        estimateExposed(estimates, adjustedCount, incubationEndDay, incubationStartDay)
-
-        const mildCount = Math.round((1 - P_SEVERE - CFR) * adjustedCount)
-        const mildStartDay = infectiousEndDay+1
-        const mildEndDay = mildStartDay + Math.round(D_recovery_mild) - 1
-        estimateMild(estimates, days, mildStartDay, mildEndDay, mildCount)
-
-        const mildRecoveredStartDay = mildEndDay+1
-        estimateMildRecovery(estimates, mildRecoveredStartDay, mildCount, days)
-
-        const hospSurvivorCount = Math.round(P_SEVERE * adjustedCount)
-        const hospStartDay = infectiousEndDay + 1
-        const hospEndDay = hospStartDay + Math.round(D_hospital) - 1
-        const recHospStartDay = hospEndDay + 1
-        estimateRecoveredHospital(estimates, recHospStartDay, days, hospSurvivorCount)
-
-        const hospCount = Math.round((P_SEVERE + CFR) * adjustedCount)
-        estimateHospitalization(estimates, hospStartDay, hospEndDay, days, hospCount)
-        
-    }
-
-    const proportionOfHospitaliedWhoWillDie = CFR / (CFR + P_SEVERE)
-    estimateHospitalOutcome(estimates, days, proportionOfHospitaliedWhoWillDie)
-
-    estimateRegularAndICU(estimates, days, P_ICU)
-
-    var shiftedStates = shiftEstimates(estimates, days, shiftDays)
-
-    var goh_states = createGohStates(shiftedStates, N)
-
-    var uf_states = map_goh_states_into_UFStates(goh_states, N, 0)
-    createUserFacingStates(uf_states, estimates, days, shiftDays)
-    
-    
-    return [first_date, goh_states, uf_states]
 }
